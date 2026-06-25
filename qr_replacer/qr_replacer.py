@@ -191,8 +191,8 @@ def composite_qr(
     output_img: np.ndarray,
     warped_qr: np.ndarray,
     dst_points: np.ndarray,
-    feather: bool = False,
-    feather_px: int = 5,
+    feather: bool = True,
+    feather_px: int = 2,
 ) -> np.ndarray:
     """
     Composite the warped QR onto the original using a polygon mask.
