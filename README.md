@@ -1,16 +1,19 @@
-# QR Code Replacer
+# QR Code Replacer v0.4
 
-A deterministic Python pipeline for detecting and replacing QR codes inside images, with full re-validation.
+A deterministic Python pipeline for detecting and replacing QR codes inside images, with smart carrier detection and multi-candidate scoring.
 
 ## Features
 
-- **Robust detection** — 5-stage fallback chain using separate `detect()` + `decode()` calls (handles ECI-encoded QR codes that `detectAndDecode` fails on)
+- **Smart carrier detection** — scans outward from QR to find paper boundaries, avoids covering text/graphics
+- **Multi-candidate scoring** — generates tight/smart/conservative candidates, auto-selects best
+- **Robust detection** — 5-stage fallback chain using separate `detect()` + `decode()` calls
 - **Perspective-correct warp** — preserves detected position, scale, and angle via homography
 - **Re-validation** — decodes output to confirm replacement succeeded
-- **Feather blending** — optional soft-edge blending at QR boundary for natural composites
+- **Feather blending** — Gaussian-blurred soft-edge blending at carrier boundary
+- **Content protection** — penalizes carrier expansions that cover nearby text/graphics
 - **Color QR support** — specify foreground/background colors
-- **Debug output** — saves intermediate images for each detection/preprocessing stage
-- **Multi-QR support** — replace all detected codes with `--replace-all`
+- **Debug output** — saves candidate comparisons and full pipeline report
+- **Texture simulation** — Gaussian noise + blur + JPEG to match paper appearance
 
 ## Installation
 
@@ -88,17 +91,20 @@ When `debug_dir` is set, saves:
 
 ```
 debug/
-├── 01_preproc_bgr.png        # Original BGR
-├── 01_preproc_gray.png       # Grayscale
-├── 01_preproc_otsu.png       # Otsu threshold
-├── 01_preproc_inv_gray.png   # Inverted grayscale
-├── 01_preproc_clahe.png      # CLAHE enhanced
-├── 02_detected_bgr.png       # Detection overlay (first success)
-├── 03_detected_region.png    # Ordered corner overlay
-├── 04_new_qr_raw.png         # Generated replacement QR
-├── 05_warped_qr.png          # Warped QR (before composite)
-└── 06_composited.png         # Final composited result
+├── 03_detected_region.png       # Detection overlay on original
+├── 04_candidate_tight.png       # Tight expansion overlay
+├── 04_candidate_smart.png       # Smart expansion overlay
+├── 04_candidate_conservative.png # Conservative expansion overlay
+├── 05_tight_blended.png        # Tight candidate result
+├── 05_smart_blended.png        # Smart candidate result
+├── 05_conservative_blended.png  # Conservative candidate result
+├── 10_final.png                # Best candidate (selected by scoring)
+└── pipeline_report.json         # Full debug report with scores
 ```
+
+### Scoring
+
+Candidates are scored: `decode_success*5 + brightness_match + content_protection*2 - size_penalty`
 
 ## Requirements
 
