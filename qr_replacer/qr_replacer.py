@@ -192,7 +192,7 @@ def composite_qr(
     warped_qr: np.ndarray,
     dst_points: np.ndarray,
     feather: bool = True,
-    feather_px: int = 2,
+    feather_px: int = 5,
 ) -> np.ndarray:
     """
     Composite the warped QR onto the original using a polygon mask.
@@ -260,7 +260,7 @@ def replace_qr_pipeline(
     new_payload: str,
     output_path: str,
     debug_dir: Optional[str] = None,
-    feather: bool = False,
+    feather: bool = True,
     replace_all: bool = False,
     qr_fg: tuple = (0, 0, 0),
     qr_bg: tuple = (255, 255, 255),
