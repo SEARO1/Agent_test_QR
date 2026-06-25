@@ -26,4 +26,6 @@ __all__ = [
     "generate_carrier_patch",
     "blend_feather",
     "blend_seamless",
+    "compute_smart_expansion",
+    "detect_carrier_region",
 ]

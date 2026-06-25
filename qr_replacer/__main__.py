@@ -21,8 +21,7 @@ parser.add_argument("-d", "--debug", help="Debug output directory")
 parser.add_argument("-f", "--feather", action="store_true", default=True, help="Use feather blending (default)")
 parser.add_argument("--seamless", action="store_true", help="Use seamlessClone blending")
 parser.add_argument("-a", "--replace-all", action="store_true", help="Replace all detected QR codes")
-parser.add_argument("--expand", type=float, default=1.45, help="Carrier patch expansion ratio (default: 1.45)")
-parser.add_argument("--qr-scale", type=float, default=0.72, help="QR scale within carrier (default: 0.72, unused in v0.3)")
+parser.add_argument("--expand", type=float, default=1.2, help="Carrier patch expansion ratio (default: 1.2, used for fallback)")
 parser.add_argument("--feather-px", type=int, default=3, help="Edge feather radius in pixels (default: 3)")
 parser.add_argument("--blur", type=float, default=0.0, help="Blur sigma (0=auto, default: auto)")
 parser.add_argument("--no-texture", action="store_true", help="Disable texture simulation")
@@ -49,7 +48,6 @@ result = replace_qr_pipeline(
     replace_all=args.replace_all,
     blend_mode=blend_mode,
     carrier_expand_ratio=args.expand,
-    qr_scale_within_patch=args.qr_scale,
     edge_feather_px=args.feather_px,
     blur_sigma=args.blur,
     jpeg_simulation=not args.no_jpeg,
