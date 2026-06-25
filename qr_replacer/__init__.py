@@ -13,7 +13,7 @@ Usage:
         debug_dir="debug_output/",   # optional: save debug images
         feather=True,                # optional: soft edge blending
         qr_fg=(0, 0, 0),            # optional: QR foreground color
-        qr_bg=(255, 255, 255),       # optional: QR background color
+        qr_bg=(255, 255, 255),      # optional: QR background color
     )
 
     print(f"Success: {result.success}")
@@ -27,7 +27,6 @@ from .qr_replacer import (
     order_points,
     perspective_warp,
     composite_qr,
-    compute_qr_region_size,
 )
 
 __version__ = "0.2.0"
@@ -39,5 +38,4 @@ __all__ = [
     "order_points",
     "perspective_warp",
     "composite_qr",
-    "compute_qr_region_size",
 ]
