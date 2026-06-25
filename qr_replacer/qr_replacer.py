@@ -37,90 +37,40 @@ def _normalize_detect_result(retval, decoded_info, points) -> tuple:
 
 def detect_qr_chain(img: np.ndarray, debug_prefix: str = "debug") -> tuple:
     """
-    Detection fallback chain:
-      1. original BGR (single + multi)
-      2. grayscale (single + multi)
-      3. Otsu threshold
-      4. inverted grayscale
-      5. detectAndDecodeMulti as final fallback
+    Detection fallback chain using separate detect() + decode() calls for robustness.
+    Falls back through multiple image preprocessing methods.
 
     Returns: (points, decoded_text, method_used)
     """
-    methods_used = []
     detector = cv2.QRCodeDetector()
 
-    # 1. original BGR - try multi first (more comprehensive)
-    try:
-        retval, decoded_info, points, _ = detector.detectAndDecodeMulti(img)
-        pts, text = _normalize_detect_result(retval, decoded_info, points)
-        if pts is not None and len(pts) > 0:
-            return pts, text, "bgr_multi"
-    except Exception:
-        pass
-
-    # Try single on original
-    try:
-        retval, decoded_info, points, _ = detector.detectAndDecode(img)
-        pts, text = _normalize_detect_result(retval, decoded_info, points)
-        if pts is not None and len(pts) > 0:
-            return pts, text, "bgr_single"
-    except Exception:
-        pass
-
-    methods_used.append("bgr")
-
-    # 2. grayscale
+    # Preprocess images
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-    try:
-        retval, decoded_info, points, _ = detector.detectAndDecodeMulti(gray)
-        pts, text = _normalize_detect_result(retval, decoded_info, points)
-        if pts is not None and len(pts) > 0:
-            return pts, text, "gray_multi"
-    except Exception:
-        pass
-    try:
-        retval, decoded_info, points, _ = detector.detectAndDecode(gray)
-        pts, text = _normalize_detect_result(retval, decoded_info, points)
-        if pts is not None and len(pts) > 0:
-            return pts, text, "grayscale"
-    except Exception:
-        pass
-    methods_used.append("grayscale")
-
-    # 3. Otsu threshold
     _, thresh = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
-    try:
-        retval, decoded_info, points, _ = detector.detectAndDecode(thresh)
-        pts, text = _normalize_detect_result(retval, decoded_info, points)
-        if pts is not None and len(pts) > 0:
-            return pts, text, "otsu"
-    except Exception:
-        pass
-    methods_used.append("otsu")
-
-    # 4. inverted grayscale
     inv_gray = cv2.bitwise_not(gray)
-    try:
-        retval, decoded_info, points, _ = detector.detectAndDecode(inv_gray)
-        pts, text = _normalize_detect_result(retval, decoded_info, points)
-        if pts is not None and len(pts) > 0:
-            return pts, text, "inverted"
-    except Exception:
-        pass
-    methods_used.append("inverted")
 
-    # 5. Final fallback - try multi on any of the above processed images
+    # Try detect + decode (separate calls) on each preprocessing variant
     for proc_img, name in [(img, "bgr"), (gray, "gray"), (thresh, "otsu"), (inv_gray, "inv")]:
         try:
-            retval, decoded_info, points, _ = detector.detectAndDecodeMulti(proc_img)
-            pts, text = _normalize_detect_result(retval, decoded_info, points)
-            if pts is not None and len(pts) > 0:
-                return pts, text, f"multi_{name}"
+            retval, points = detector.detect(proc_img)
+            if retval and points is not None and len(points) > 0:
+                decoded_text, _ = detector.decode(proc_img, points)
+                return points, decoded_text, name
         except Exception:
             pass
-    methods_used.append("multi_final")
 
-    return None, None, methods_used
+    # Try detectAndDecodeMulti as final fallback
+    for proc_img, name in [(img, "bgr"), (gray, "gray"), (thresh, "otsu"), (inv_gray, "inv")]:
+        try:
+            # detectAndDecodeMulti returns 4 values: retval, decoded_list, points, straight_qr
+            retval, decoded_list, points, _ = detector.detectAndDecodeMulti(proc_img)
+            if retval and points is not None and len(points) > 0:
+                decoded_text = decoded_list[0] if isinstance(decoded_list, (list, tuple)) else decoded_list
+                return points, decoded_text, f"multi_{name}"
+        except Exception:
+            pass
+
+    return None, None, []
 
 
 def order_points(pts: np.ndarray) -> np.ndarray:
