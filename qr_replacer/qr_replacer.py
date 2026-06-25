@@ -365,32 +365,3 @@ def replace_qr_pipeline(
         new_decoded_text=final_text,
         success=success
     )
-
-
-if __name__ == "__main__":
-    import argparse
-
-    parser = argparse.ArgumentParser(description="QR Code Replacement Pipeline")
-    parser.add_argument("--input", "-i", required=True, help="Input image path")
-    parser.add_argument("--payload", "-p", required=True, help="New QR payload string")
-    parser.add_argument("--output", "-o", default="output_qr_replaced.png", help="Output image path")
-    parser.add_argument("--debug", "-d", help="Debug output directory")
-    parser.add_argument("--feather", "-f", action="store_true", help="Enable feather blending")
-    parser.add_argument("--replace-all", "-a", action="store_true", help="Replace all detected QR codes")
-
-    args = parser.parse_args()
-
-    result = replace_qr_pipeline(
-        input_image_path=args.input,
-        new_payload=args.payload,
-        output_path=args.output,
-        debug_dir=args.debug,
-        feather=args.feather,
-        replace_all=args.replace_all
-    )
-
-    print(f"Output: {result.output_image_path}")
-    print(f"Detected points:\n{result.detected_points}")
-    print(f"Old decoded: {result.old_decoded_text}")
-    print(f"New decoded: {result.new_decoded_text}")
-    print(f"Success: {result.success}")

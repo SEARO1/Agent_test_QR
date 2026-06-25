@@ -3,7 +3,7 @@ Quick test script for qr_replacer pipeline.
 """
 import cv2
 import numpy as np
-from qr_replacer import replace_qr_pipeline, generate_qr_image, detect_qr_chain
+from qr_replacer.qr_replacer import replace_qr_pipeline, generate_qr_image, detect_qr_chain
 
 # Generate a test image with a QR code (simple standalone QR)
 qr = generate_qr_image("https://example.com/old")
@@ -15,7 +15,7 @@ pts, text, method = detect_qr_chain(qr)
 print(f"Detected: pts={pts is not None}, text={text}, method={method}")
 
 # Manually run through the pipeline to debug
-from qr_replacer import order_points, perspective_warp, composite_qr
+from qr_replacer.qr_replacer import order_points, perspective_warp, composite_qr
 
 detector = cv2.QRCodeDetector()
 retval, decoded_info, points, _ = detector.detectAndDecodeMulti(qr)
