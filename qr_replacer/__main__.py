@@ -1,6 +1,10 @@
 """
 CLI entry point for qr_replacer package.
-Run with: python -m qr_replacer -i input.png -p "payload" -o output.png
+
+Usage:
+    python -m qr_replacer -i input.png -p "payload" -o output.png
+    python -m qr_replacer -i input.png -p "payload" -o output.png -f     # feather blending
+    python -m qr_replacer -i input.png -p "payload" -o output.png -d debug/   # save debug images
 """
 
 import argparse
@@ -13,8 +17,14 @@ parser.add_argument("-o", "--output", default="output_qr_replaced.png", help="Ou
 parser.add_argument("-d", "--debug", help="Debug output directory")
 parser.add_argument("-f", "--feather", action="store_true", help="Enable feather blending")
 parser.add_argument("-a", "--replace-all", action="store_true", help="Replace all detected QR codes")
+parser.add_argument("--fg", dest="fg", default="0,0,0", help="QR foreground color as R,G,B (default: 0,0,0)")
+parser.add_argument("--bg", dest="bg", default="255,255,255", help="QR background color as R,G,B (default: 255,255,255)")
 
 args = parser.parse_args()
+
+# Parse color tuples
+def parse_color(s):
+    return tuple(int(x) for x in s.split(","))
 
 result = replace_qr_pipeline(
     input_image_path=args.input,
@@ -22,11 +32,14 @@ result = replace_qr_pipeline(
     output_path=args.output,
     debug_dir=args.debug,
     feather=args.feather,
-    replace_all=args.replace_all
+    replace_all=args.replace_all,
+    qr_fg=parse_color(args.fg),
+    qr_bg=parse_color(args.bg),
 )
 
-print(f"Output: {result.output_image_path}")
-print(f"Detected points:\n{result.detected_points}")
-print(f"Old decoded: {result.old_decoded_text}")
-print(f"New decoded: {result.new_decoded_text}")
-print(f"Success: {result.success}")
+print(f"Output:        {result.output_image_path}")
+print(f"Detected pts:  {result.detected_points}")
+print(f"Method used:   {result.method_used}")
+print(f"Old decoded:   {result.old_decoded_text}")
+print(f"New decoded:   {result.new_decoded_text}")
+print(f"Success:       {result.success}")
